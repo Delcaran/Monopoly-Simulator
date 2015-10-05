@@ -4,106 +4,135 @@
 #include <ctime>
 #include <iostream>
 #include <algorithm>
+#include <ios>
+#include <iomanip>
 
 int main(int argc, char *argv[])
 {
-	// mescolo le probabilita e gli imprevisti
 	std::srand(static_cast<unsigned int>(std::time(0)));
-	for(int p = 0; p < kNumProbabilita; ++p) { shuffle_probabilita.push_back(kMazzoProbabilita[p]); }
-	for(int i = 0; i < kNumImprevisti; ++i) { shuffle_imprevisti.push_back(kMazzoImprevisti[i]); }
-	std::random_shuffle(shuffle_probabilita.begin(), shuffle_probabilita.end());
-	std::random_shuffle(shuffle_imprevisti.begin(), shuffle_imprevisti.end());
-	for(std::vector<Cartellini>::iterator p = shuffle_probabilita.begin(); p != shuffle_probabilita.end(); ++p) { mazzo_probabilita.push(*p); }
-	for(std::vector<Cartellini>::iterator i = shuffle_imprevisti.begin(); i != shuffle_imprevisti.end(); ++i) { mazzo_probabilita.push(*i); }
+	int num_players = 1 + (rand() % 10);
+	int num_turns = 1 + (rand() % 10000);
+	int num_partite = 1 + (rand() % 100);
 
-	int num_players;
-	num_players = 4;
-	std::vector<int> turni_consecutivi_prigione(num_players);
-	std::vector<int> doppi_consecutivi(num_players);
-	for(int p = 0; p < num_players; ++p) { casella_player.push_back(0); }
-	for(std::vector<int>::iterator p = turni_consecutivi_prigione.begin(); p != turni_consecutivi_prigione.end(); ++p) { *p = 0; }
-	for(std::vector<int>::iterator p = doppi_consecutivi.begin(); p != doppi_consecutivi.end(); ++p) { *p = 0; }
+	switch(argc) {
+	case 2: 
+		num_players = atoi(argv[1]); 
+		break;
+	case 3:
+		num_players = atoi(argv[1]); 
+		num_partite = atoi(argv[2]);
+		break;
+	case 4:
+		num_players = atoi(argv[1]); 
+		num_partite = atoi(argv[2]); 
+		num_turns = atoi(argv[3]); 
+		break;
+	default:
+		num_players = 1 + (rand() % 10);
+		num_partite = 1 + (rand() % 100);
+		num_turns = 1 + (rand() % 10000);
+		break;
+	}
 
-	int num_turns;
-	num_turns = num_players * 50;
+	for(int partita = 0; partita < num_partite; ++partita) {
+		// mescolo le probabilita e gli imprevisti
+		std::srand(static_cast<unsigned int>(std::time(0)));
+		for(int p = 0; p < kNumCartellini; ++p) { 
+			mazzo_probabilita.push_back(kMazzoProbabilita[p]);
+			mazzo_imprevisti.push_back(kMazzoImprevisti[p]);
+		}
+		std::random_shuffle(mazzo_probabilita.begin(), mazzo_probabilita.end());
+		std::random_shuffle(mazzo_imprevisti.begin(), mazzo_imprevisti.end());
 
-	for(int turn = 0; turn < num_turns; ++turn) {
-		for(int player = 0; player < num_players; ++player) {
-			int roll_1 = 1 + (rand() % 6);
-			int roll_2 = 1 + (rand() % 6);
-			int roll = roll_1 + roll_2;
-			bool doppio = (roll_1 == roll_2);
-			if (doppio) doppi_consecutivi.at(player) += 1;
+		std::vector<int> turni_consecutivi_prigione(num_players);
+		std::vector<int> doppi_consecutivi(num_players);
+		for(int p = 0; p < num_players; ++p) { casella_player.push_back(0); }
+		for(std::vector<int>::iterator p = turni_consecutivi_prigione.begin(); p != turni_consecutivi_prigione.end(); ++p) { *p = 0; }
+		for(std::vector<int>::iterator p = doppi_consecutivi.begin(); p != doppi_consecutivi.end(); ++p) { *p = 0; }
+
+		for(int turn = 0; turn < num_turns; ++turn) {
+			for(int player = 0; player < num_players; ++player) {
+				int roll_1 = 1 + (rand() % 6);
+				int roll_2 = 1 + (rand() % 6);
+				int roll = roll_1 + roll_2;
+				bool doppio = (roll_1 == roll_2);
+				if (doppio) doppi_consecutivi.at(player) += 1;
 			
-			int casella_attuale = casella_player.at(player);
-			// verifico se si trova in prigione
-			if(kTabellone[casella_attuale] == InPrigione) {
-				if(turni_consecutivi_prigione.at(player) < 3) {
-					// meno di tre turni, esce con doppio
-					if(!doppio) {
-						continue; // niente doppio, salta il turno
+				int casella_attuale = casella_player.at(player);
+				// verifico se si trova in prigione
+				if(kTabellone[casella_attuale] == InPrigione) {
+					if(turni_consecutivi_prigione.at(player) < 3) {
+						// meno di tre turni, esce con doppio
+						if(!doppio) {
+							continue; // niente doppio, salta il turno
+						}
+					} else {
+						// pena scontata, prosegue
+						turni_consecutivi_prigione.at(player) = 0;
 					}
 				} else {
-					// pena scontata, prosegue
-					turni_consecutivi_prigione.at(player) = 0;
-				}
-			} else {
-				// non e' in prigione, verifico se ha fatto 3 doppi di fila
-				if(doppio) {
-					if(doppi_consecutivi.at(player) == 3) {
-						// in prigione
-						movePlayer(player, vaiInPrigione());
-						continue;
+					// non e' in prigione, verifico se ha fatto 3 doppi di fila
+					if(doppio) {
+						if(doppi_consecutivi.at(player) == 3) {
+							// in prigione
+							movePlayer(player, vaiInPrigione());
+							continue;
+						}
+					} else {
+						doppi_consecutivi.at(player) = 0;
 					}
-				} else {
-					doppi_consecutivi.at(player) = 0;
 				}
+
+				int casella_arrivo = (casella_attuale + roll) % kNumCaselle;
+				movePlayer(player, casella_arrivo);
+				bool continua_analisi = true;
+				int casella_nuova = casella_arrivo;
+				Cartellini estratto;
+				do {	
+					// verifico cosa succede nella casella di arrivo
+					switch(kTabellone[casella_nuova]) {
+					case Probabilita:
+						estratto = mazzo_probabilita.front();
+						continua_analisi = gestisciCartellino(estratto, casella_nuova);
+						mazzo_probabilita.push_back(estratto);
+						mazzo_probabilita.erase(mazzo_probabilita.begin());
+						break;
+					case Imprevisti:
+						estratto = mazzo_imprevisti.front();
+						continua_analisi = gestisciCartellino(estratto, casella_nuova);
+						mazzo_imprevisti.push_back(estratto);
+						mazzo_imprevisti.erase(mazzo_imprevisti.begin());
+						break;
+					case InPrigione:
+						casella_nuova = vaiInPrigione();
+						continua_analisi = false;
+						// cosa succede se ho fatto un tiro doppio e sono finito nella casella "InPrigione" ???
+						break;
+					default: 
+						continua_analisi = false;
+						break;
+					}
+
+					if(casella_player.at(player) != casella_nuova) {
+						movePlayer(player, casella_nuova);
+					}
+				} while(continua_analisi);
+
+				// se ha fatto un doppio tocca di nuovo a questo giocatore
+				if(doppio) --player;
 			}
-
-			int casella_arrivo = (casella_attuale + roll) % kNumCaselle;
-			movePlayer(player, casella_arrivo);
-			bool continua_analisi = true;
-			int casella_nuova = casella_arrivo;
-			do {	
-				// verifico cosa succede nella casella di arrivo
-				switch(kTabellone[casella_nuova]) {
-				case Probabilita:
-					continua_analisi = gestisciCartellino(mazzo_probabilita.front(), casella_nuova);
-					mazzo_probabilita.push(mazzo_probabilita.front());
-					mazzo_probabilita.pop();
-					break;
-				case Imprevisti:
-					continua_analisi = gestisciCartellino(mazzo_imprevisti.front(), casella_nuova);
-					mazzo_imprevisti.push(mazzo_imprevisti.front());
-					mazzo_imprevisti.pop();
-					break;
-				case InPrigione:
-					casella_nuova = vaiInPrigione();
-					continua_analisi = false;
-					// cosa succede se ho fatto un tiro doppio e sono finito nella casella "InPrigione" ???
-					break;
-				default: 
-					continua_analisi = false;
-					break;
-				}
-
-				if(casella_player.at(player) != casella_nuova) {
-					movePlayer(player, casella_nuova);
-				}
-			} while(continua_analisi);
-
-			// se ha fatto un doppio tocca di nuovo a questo giocatore
-			if(doppio) --player;
 		}
 	}
 
 	// fine simulazione, stampo i risultati
+	std::cout << num_players << " giocatori in " << num_partite << " partite da " << num_turns << " turni." << std::endl;
 	for(int casella = 0; casella < kNumCaselle; ++casella) {
-		std::cout << kNomiCaselle[casella] << "\t\t: "<< visite_caselle[casella] << std::endl;
+		std::cout << std::setw(25) << std::setfill(' ') << std::left << kNomiCaselle[casella] << " : " << std::setw(5) << std::right << visite_caselle[casella];
+		if(casella == static_cast<int>(TransitoPrigione)) {
+			std::cout << " , di cui in prigione: " << conta_prigione;
+		}
+		std::cout << std::endl;
 	}
-
-	int dummy;
-	std::cin >> dummy;
 
 	return 0;
 }

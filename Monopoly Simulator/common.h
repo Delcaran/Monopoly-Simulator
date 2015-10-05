@@ -2,9 +2,9 @@
 #define _COMMON_H_
 
 #include <iostream>
-#include <queue>
 #include <string>
 #include <cmath>
+#include <vector>
 
 // TIPI
 enum Caselle { VicoloCorto, Probabilita, VicoloStretto, TassaPatrimoniale, StazioneSUD, BastioniGranSasso, Imprevisti, VialeMonterosa, VialeVesuvio, TransitoPrigione, ViaAccademia, SocietaElettrica,
@@ -18,13 +18,12 @@ enum Cartellini {
 
 // COSTANTI
 const int kNumCaselle = 40;
-const int kNumImprevisti = 16;
-const int kNumProbabilita = 16;
+const int kNumCartellini = 16;
 
-const std::string kNomiCaselle[kNumCaselle] = { "Vicolo Corto", "Probabilità", "Vicolo Stretto", "Tassa Patrimoniale", "Stazione SUD", "Bastioni Gran Sasso", "Imprevisti", "Viale Monterosa",
-	"Viale Vesuvio", "Prigione",  "Via Accademia", "Società Elettrica", "Corso Ateneo", "Piazza Università", "Stazione OVEST", "Via Verdi",  "Probabilità", "Corso Raffaello", "Piazza Dante",
-	"Parcheggio", "Via Marco Polo", "Imprevisti",  "Corso Magellano", "Largo Colombo", 	"Stazione Nord", "Viale Costantino",  "Viale Traiano", "Società Acqua Potabile", "Piazza Giulio Cesare",
-	"In Prigione", "Via Roma", "Corso Impero", "Probabilità", "Largo Augusto", "Stazione EST", "Imprevisti", "Viale dei Giardini", "Tassa di Lusso", "Parco della Vittoria", "VIA"
+const std::string kNomiCaselle[kNumCaselle] = { "Vicolo Corto", "Probabilita'", "Vicolo Stretto", "Tassa Patrimoniale", "Stazione SUD", "Bastioni Gran Sasso", "Imprevisti", "Viale Monterosa",
+	"Viale Vesuvio", "Prigione",  "Via Accademia", "Societa' Elettrica", "Corso Ateneo", "Piazza Universita'", "Stazione OVEST", "Via Verdi",  "Probabilita'", "Corso Raffaello", "Piazza Dante",
+	"Parcheggio", "Via Marco Polo", "Imprevisti",  "Corso Magellano", "Largo Colombo", 	"Stazione Nord", "Viale Costantino",  "Viale Traiano", "Societa' Acqua Potabile", "Piazza Giulio Cesare",
+	"In Prigione", "Via Roma", "Corso Impero", "Probabilita'", "Largo Augusto", "Stazione EST", "Imprevisti", "Viale dei Giardini", "Tassa di Lusso", "Parco della Vittoria", "VIA"
 };
 
 const Caselle kTabellone[kNumCaselle] = { VicoloCorto, Probabilita, VicoloStretto, TassaPatrimoniale, StazioneSUD, BastioniGranSasso, Imprevisti, VialeMonterosa, VialeVesuvio, TransitoPrigione,
@@ -33,17 +32,14 @@ const Caselle kTabellone[kNumCaselle] = { VicoloCorto, Probabilita, VicoloStrett
 	ParcodellaVittoria, VIA 
 };
 
-const Cartellini kMazzoImprevisti[kNumImprevisti] = { Altro, VaiPrigione, VaiVia, VaiVicoloCorto, VaiViaAccademia, VaiStazioneNord, VaiParcoDellaVittoria, TrePassiIndietro,
-	Altro, VaiPrigione, VaiVia, VaiVicoloCorto, VaiViaAccademia, VaiStazioneNord, VaiParcoDellaVittoria, TrePassiIndietro
-} ;
-const Cartellini kMazzoProbabilita[kNumProbabilita] = { Altro, VaiPrigione, VaiVia, VaiViaAccademia, VaiLargoColombo, VaiStazioneNord, VaiParcoDellaVittoria, TrePassiIndietro,
-	Altro, VaiPrigione, VaiVia, VaiViaAccademia, VaiLargoColombo, VaiStazioneNord, VaiParcoDellaVittoria, TrePassiIndietro
+const Cartellini kMazzoImprevisti[kNumCartellini] = { VaiPrigione, VaiPrigione, VaiVia, VaiVia, VaiVicoloCorto, VaiVicoloCorto, Altro, Altro, Altro, Altro, Altro, Altro, Altro, Altro, Altro, Altro } ;
+const Cartellini kMazzoProbabilita[kNumCartellini] = { VaiPrigione, VaiPrigione, VaiVia, VaiVia, VaiViaAccademia, VaiViaAccademia, VaiLargoColombo, VaiLargoColombo, VaiStazioneNord, VaiStazioneNord, VaiParcoDellaVittoria,
+	VaiParcoDellaVittoria, TrePassiIndietro, TrePassiIndietro, Altro, Altro 
 } ;
 
 // VARIABILI
 std::vector<int> casella_player;
-std::vector<Cartellini> shuffle_probabilita, shuffle_imprevisti;
-std::queue<Cartellini> mazzo_probabilita, mazzo_imprevisti;
+std::vector<Cartellini> mazzo_probabilita, mazzo_imprevisti;
 int visite_caselle[kNumCaselle] = { 0 };
 int conta_prigione; // volte in transito = visite_caselle[Prigione] - conta_prigione;
 
